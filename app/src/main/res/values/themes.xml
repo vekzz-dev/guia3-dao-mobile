@@ -1,0 +1,5 @@
+<resources>
+    <!-- Tema basado en AppCompat: las pantallas usan AppCompatActivity y
+         componentes estandar, asi que no hace falta la libreria Material. -->
+    <style name="Theme.AgendaAcademica" parent="Theme.AppCompat.Light.DarkActionBar" />
+</resources>
