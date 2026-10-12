@@ -1,5 +1,8 @@
 # Agenda Académica — patrón DAO con archivos JSON
 
+**Kevin René Flores Martínez** · FM100224
+**Desarrollo de Aplicaciones Multiplataforma (DAP)** · Guía práctica 3
+
 Aplicación Android (Java) que registra las materias de un estudiante y las tareas
 de cada una, guardando todo en archivos JSON dentro del almacenamiento interno
 del dispositivo. El acceso a datos está detrás del patrón **DAO**, con una clase
@@ -43,7 +46,8 @@ Pantalla (Activity)  →  Interfaz DAO  →  JsonDAOBase<T>  →  materias.json 
 ni `TareaDAOJson`. Se comprueba con:
 
 ```bash
-grep -rn "DAOJson" app/src/main/java/sv/edu/ufg/agenda/ui/   # no debe devolver nada
+grep -rn "DAOJson" app/src/main/java/sv/edu/ufg/agenda/ui/
+# no debe devolver nada
 ```
 
 ## Reglas del caso de estudio
@@ -73,12 +77,46 @@ app/src/main/res/layout/      activity_materias, item_materia,
 app/src/test/java/.../dao/    TareaDAOJsonTest (JUnit + TemporaryFolder)
 ```
 
-## Cambiar de JSON a base de datos
+## Cambiar de JSON a base de datos (pregunta de reflexión)
 
-No se toca ninguna pantalla. Se crean `MateriaDAOSqlite` y `TareaDAOSqlite`
-cumpliendo los mismos contratos, y se cambia **solo el constructor de
-`DAOFactory`** para que reciba el `Context` en lugar de la carpeta. Los layouts,
-los adaptadores y las Activities quedan igual.
+> _Si mañana la institución exige guardar los datos en SQLite, ¿cuántos archivos
+> de la carpeta `ui` habría que modificar?_
+
+**Ninguno. Cero archivos de `ui`.**
+
+La razón es que las pantallas piden `MateriaDAO` y `TareaDAO` por su interfaz, y
+no saben quién está detrás. `MateriasActivity` llama a `materiaDAO.listar()` y
+`tareaDAO.listarPorMateria(...)`; mientras esos métodos sigan existiendo, la
+pantalla no tiene por qué enterarse del cambio.
+
+Lo que sí habría que tocar está **entero fuera de `ui`**:
+
+| Archivo | Paquete | Cambio |
+|---|---|---|
+| `MateriaDAOSqlite.java` | `dao` | Nuevo: cumple `MateriaDAO` con SQLite o Room |
+| `TareaDAOSqlite.java` | `dao` | Nuevo: cumple `TareaDAO` con SQLite o Room |
+| `DAOFactory.java` | `dao` | Dos líneas: el `new` de cada implementación |
+| `AgendaApp.java` | raíz | Una línea: pasa el `Context` en lugar de la carpeta |
+
+Y no cambian: `MateriasActivity`, `MateriaAdapter`, `TareasActivity`,
+`TareaAdapter`, ningún layout, el manifiesto, ni las entidades `Materia` y
+`Tarea`. La prueba `TareaDAOJsonTest` sí cambiaría de sujeto, pero es una prueba
+de la implementación, no de la pantalla.
+
+El detalle que hace posible esa respuesta es que **nada fuera del paquete `dao`
+conoce las clases JSON**, y dentro de `dao` solo `DAOFactory` las instancia. Se
+comprueba con una línea:
+
+```bash
+grep -rln "DAOJson" app/src/main/java/ --include='*.java' | grep -v "/dao/"
+# no debe devolver nada: fuera de dao nadie menciona las implementaciones JSON
+```
+
+Mencionar `DAOJson` solo ocurre en tres archivos, y los tres viven en `dao`:
+`MateriaDAOJson.java`, `TareaDAOJson.java` y `DAOFactory.java`.
+
+Si el almacén cambia y el cambio cabe en un solo paquete, el patrón está bien
+aplicado.
 
 ## Trabajo y verificación
 

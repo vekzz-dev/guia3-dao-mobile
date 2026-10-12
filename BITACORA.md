@@ -2,6 +2,9 @@
 
 ## Declaración de autoría
 
+**Kevin René Flores Martínez — FM100224**
+Desarrollo de Aplicaciones Multiplataforma (DAP) · Guía práctica 3
+
 Este proyecto fue desarrollado **individualmente**. La guía está pensada para
 equipos de tres integrantes y reparte el trabajo en tres roles; aquí esos roles
 se ejecutaron como **fases sucesivas de una sola persona**, cada una en su
